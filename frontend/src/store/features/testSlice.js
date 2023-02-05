@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { ethers } from 'ethers'
+import { register } from '../../api/registration';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum)
 
@@ -13,13 +14,19 @@ const initialState = {
     adress: '',
 }
 
-export const setAdressThunk = createAsyncThunk(
+export const RegistrationThunk = createAsyncThunk(
     'test/setAdressThunk',
     async (action,{dispatch}) => {
         try {
             await setProvider()
             let adress = await signer.getAddress()
-            dispatch(setAdress(adress))
+            try {
+                let signature = await signer.signMessage('Registration account')
+                let res = await register({signature, adress})
+                console.log(res.data)
+            } catch (e) {
+                return e
+            }
         } catch (e) {
             return e
         }
