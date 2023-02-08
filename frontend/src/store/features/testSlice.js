@@ -23,7 +23,8 @@ export const RegistrationThunk = createAsyncThunk(
             try {
                 let signature = await signer.signMessage('Registration account')
                 let res = await register({signature, adress})
-                console.log(res.data)
+                localStorage.setItem('jwt', res.data)
+                dispatch(setAdress(adress))
             } catch (e) {
                 return e
             }
