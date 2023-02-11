@@ -1,5 +1,7 @@
 const ApiError = require("../error/ApiError")
 const { Item, Sizes, Type, Brand, ItemSize } = require("../models/models")
+const uuid = require('uuid')
+const path = require('path')
 
 class ItemController {
     async addItem(req, res) {
@@ -8,8 +10,10 @@ class ItemController {
                 return res.json(ApiError.internal("You must provide info"))
             }
 
-            let { name, price, rating, img, item_info, type, brand } = req.body
-
+            const { name, price, rating, item_info, type, brand } = req.body
+            const { img } = req.files
+            let fileName = uuid.v4() + ".jpg"
+            img.mv(path.resolve(__dirname, '..', 'static', fileName))
             let Ctype = await Type.findOrCreate({
                 where: {
                     name: type
@@ -34,7 +38,7 @@ class ItemController {
                 name,
                 price,
                 rating,
-                img,
+                img: fileName,
                 item_info,
                 typeId: Ctype.id,
                 brandId: Cbrand.id,

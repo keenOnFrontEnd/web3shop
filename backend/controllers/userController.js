@@ -11,7 +11,7 @@ const generateJwt = (adress) => {
 }
 
 class UserController {
-    async registration(req, res, next) {
+    async sign_up_in(req, res, next) {
         const { signature, adress } = req.body
         let verify = ethers.verifyMessage('Registration account',signature)
 
@@ -29,24 +29,6 @@ class UserController {
         const jwt = generateJwt(user.id)
         return res.json(jwt)
     }
-    async login(req, res, next) {
-        const { email, password } = req.body
-        const user = await User.findOne({ where: { email } })
-        if (!user) {
-            return next(ApiError.internal("User doesn't exist"))
-        }
-        let comparePassword = bcrypt.compareSync(password, user.password)
-        if (!comparePassword) {
-            return next(ApiError.internal("Invalid password"))
-        }
-        const token = generateJwt(user.id, user.email, user.role)
-        return res.json({ token })
-    }
-    async check(req, res) {
-        const token = generateJwt(req.user.id, req.user.email, req.user.role)
-        return res.json({ token })
-    }
-
 }
 
 module.exports = new UserController()

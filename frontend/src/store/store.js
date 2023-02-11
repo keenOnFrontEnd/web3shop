@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
-import rootReducer from './features/testSlice'
+import web3 from './features/web3Slice'
 
 
 
@@ -8,6 +8,6 @@ import rootReducer from './features/testSlice'
 export const store = configureStore(
     {
         reducer: {
-            test: rootReducer
+            web3: web3
         }
     })

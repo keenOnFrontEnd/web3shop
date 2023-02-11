@@ -1,0 +1,29 @@
+.bg {
+    background-color: #1F2421;
+}
+
+.searchWrapper {
+    background-color:  #303633;
+    color: #84978e;
+    height: 70%;
+}
+.buttonWrapper {
+    width: 300px;
+    height: 100%;
+}
+.search {
+    width: 80% !important;
+    background-color: transparent !important;
+    border: none !important;
+    color: wheat;
+}
+.search:focus {
+    border: none !important;
+    background-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: white !important;
+}
+.cartButton:hover {
+    background-color: #80928a ;
+}
