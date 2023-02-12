@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Container, Col, Form,Navbar } from 'react-bootstrap'
-import { Search, Cart3 } from 'react-bootstrap-icons';
+import { Search, Cart3, Basket } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutThunk, RegistrationThunk } from '../../store/features/web3Slice';
+import BasketComponent from './Basket';
 import s from './header.module.css'
 
 
@@ -10,6 +11,8 @@ import s from './header.module.css'
 const Headrer = () => {
 
     let dispatch = useDispatch()
+
+    let [showBasket, setShowBasket] = useState(false)
 
     let register = () => {
         dispatch(RegistrationThunk())
@@ -45,9 +48,10 @@ const Headrer = () => {
                         adress ? <Button variant='danger' className='rounded-pill' onClick={() => disconnect()}>Disconnect</Button> : <Button variant='danger' className='rounded-pill' onClick={() => register()}>Login or Create Account</Button>
                     }
 
-                    <Button variant='none' className={`${s.cartButton}`} size='xs'><Cart3 size={25} color="white" title='Cart' /></Button>
+                    <Button variant='none' className={`${s.cartButton}`} size='xs' onClick={() => setShowBasket(true)}><Cart3 size={25} color="white" title='Cart' /></Button>
                 </div>
             </Col>
+            <BasketComponent show={showBasket} handelClose={setShowBasket}/>
         </Container>
     )
 }

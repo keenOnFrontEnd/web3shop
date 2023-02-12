@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
+import { Basket } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
+import BasketComponent from './Components/UI/Basket';
 import Headrer from './Components/UI/Headrer';
 import { AvaitingModal, MessageModal } from './Components/UI/modals/Web3HelpingModals';
 import { provider, setAdress, setUnsupportedNetwork, network, accountChangedThunk } from './store/features/web3Slice';
