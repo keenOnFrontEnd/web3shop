@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
-import { Basket } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import BasketComponent from './Components/UI/Basket';
 import Headrer from './Components/UI/Headrer';
 import { AvaitingModal, MessageModal } from './Components/UI/modals/Web3HelpingModals';
-import { provider, setAdress, setUnsupportedNetwork, network, accountChangedThunk } from './store/features/web3Slice';
+import { provider, accountChangedThunk,CheckConnectionThunk } from './store/features/web3Slice';
 
 
 function App() {
@@ -12,20 +10,7 @@ function App() {
   let adress = useSelector((state) => state.web3.adress)
 
   useEffect(() => {
-    let checkHandler = async () => {
-      let accounts = await provider.listAccounts()
-      if (accounts.length === 0) {
-        console.log('connect wallet')
-      } else {
-        let currentNetwork = await provider.getNetwork()
-        if (currentNetwork.chainId !== network.chainId) {
-          dispatch(setUnsupportedNetwork(true))
-        }
-        dispatch(setAdress(accounts[0]))
-      }
-
-    }
-    checkHandler()
+    dispatch(CheckConnectionThunk())
   }, [])
 
   useEffect(() => {
@@ -33,20 +18,24 @@ function App() {
       window.ethereum.on("accountsChanged", async function (accounts) {
         accounts = await provider.listAccounts();
         if (accounts[0] !== adress) {
-          dispatch(accountChangedThunk())
+          dispatch(accountChangedThunk(accounts[0]))
         }
         console.log(accounts);
       });
     }
-   async function chainChanged() {
-    window.ethereum.on('chainChanged', async function (chainId) {
-     window.location.reload()
-    })
-   }
-   accountChanged()
-   chainChanged()
-   return () => provider.removeAllListeners()
-  }, [])
+    async function chainChanged() {
+      window.ethereum.on('chainChanged', async function (chainId) {
+        window.location.reload()
+      })
+    }
+
+    if (adress.length > 1 ) {
+      accountChanged()
+      chainChanged()
+    }
+
+    return () => provider.removeAllListeners()
+  }, [adress])
 
 
   let isConnectionLoading = useSelector((state) => state.web3.loadingConnection)

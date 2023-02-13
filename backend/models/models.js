@@ -4,7 +4,8 @@ const { DataTypes } = require('sequelize')
 const User = sequelize.define('user', {
     id: { type: DataTypes.STRING, primaryKey: true, unique: true },
     email: { type: DataTypes.STRING, allowNull: true },
-    web3Name: { type: DataTypes.STRING, allowNull: true, unique: true }
+    web3Name: { type: DataTypes.STRING, allowNull: true, unique: true },
+    isConnected: {type: DataTypes.BOOLEAN, defaultValue: false}
 })
 const Basket = sequelize.define("basket", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true }
@@ -80,7 +81,6 @@ ItemSize.belongsTo(Item)
 ItemSize.belongsTo(Sizes)
 Item.hasMany(ItemSize)
 Sizes.hasMany(ItemSize)
-
 
 module.exports = {
     User,

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { } from 'react'
 import { Container, Modal, Row } from 'react-bootstrap';
-import { Check, Check2, Check2Circle, Check2All, ExclamationOctagonFill, HourglassTop, InfoSquare } from 'react-bootstrap-icons';
+import { Check2, Check2All } from 'react-bootstrap-icons';
 
 export const AvaitingModal = ({isConnectionLoading}) => {
 

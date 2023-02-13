@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, {  useState } from 'react'
 import { Button, Container, Col, Form,Navbar } from 'react-bootstrap'
-import { Search, Cart3, Basket } from 'react-bootstrap-icons';
+import { Search, Cart3 } from 'react-bootstrap-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutThunk, RegistrationThunk } from '../../store/features/web3Slice';
 import BasketComponent from './Basket';

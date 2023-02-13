@@ -1,13 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { ethers } from 'ethers'
-import { register } from '../../api/registration';
+import { connect, disconnect, checkConnection } from '../../api/userApi'
 
 
 export const provider = new ethers.providers.Web3Provider(window.ethereum)
-provider.on('accountsChanged', function (accounts) {
-    console.log(accounts)
-    window.location.reload()
-  })
 export let network = ethers.providers.getNetwork("goerli")
 let signer = provider.getSigner()
 
@@ -22,19 +18,31 @@ const initialState = {
     loadingConnection: null,
     loadingWritingMessage: null,
     dismiss: null,
-    unsupportedNetwork: false
+    unsupportedNetwork: false,
+    isConnected: false
 }
 
 export const CheckConnectionThunk = createAsyncThunk(
     'web3/checkConnection',
-    async (action, { dispatch, getState }) => {
+    async (action, { dispatch }) => {
         try {
             let accounts = await provider.listAccounts()
             let currentNetwork = await provider.getNetwork()
-            if(currentNetwork.chainId !== network.chainId) {
-                dispatch(setUnsupportedNetwork(true))
+            let adress = accounts[0]
+            if(!adress) {
+                dispatch(logout())
             }
-            dispatch(setAdress(accounts[0]))
+            let res = await checkConnection({adress})
+            if(res.data && res.data === true) {
+                if (currentNetwork.chainId !== network.chainId) {
+                    dispatch(setUnsupportedNetwork(true))
+                } else {
+                    dispatch(setAdress(adress))
+                    dispatch(setIsConnected(true))
+                }
+            } else {
+                dispatch(logout())
+            }
         } catch (e) {
             return e
         }
@@ -44,22 +52,27 @@ export const CheckConnectionThunk = createAsyncThunk(
 
 export const RegistrationThunk = createAsyncThunk(
     'web3/setAdressThunk',
-    async (action, { dispatch }) => {
+    async (action, { dispatch, rejectWithValue }) => {
         try {
             dispatch(setLoadingConnection(true))
             await setProvider()
                 .catch((e) => dispatch(setLoadingConnection(false)))
-                .then((res) => console.log(res))
             let adress = await signer.getAddress()
             dispatch(setLoadingConnection(false))
             dispatch(setLoadingWritingMessage(true))
             let signature = await signer.signMessage('Registration account')
                 .catch((e) => dispatch(setLoadingConnection(false)))
-                .then((res) => dispatch(setAdress(adress)))
-            dispatch(setLoadingWritingMessage(false))
-
-            // let res = await register({signature, adress})
-            // localStorage.setItem('jwt', res.data)
+            let res = await connect({ signature, adress })
+            if(res.data) {
+                let {jwt, isConnected} = res.data
+                dispatch(setLoadingWritingMessage(false))
+                localStorage.setItem('jwt', jwt)
+                dispatch(setIsConnected(isConnected))
+                dispatch(setAdress(adress))
+            } else {
+                rejectWithValue("Something goes wrong")
+            }
+           
         } catch (e) {
             return e
         }
@@ -68,14 +81,21 @@ export const RegistrationThunk = createAsyncThunk(
 
 export const accountChangedThunk = createAsyncThunk(
     'web3/accountChanged',
-    async (action, {dispatch}) => {
+    async (action, { dispatch }) => {
         try {
-            let adress = await signer.getAddress()
+            let adress = action
+            console.log(adress)
             dispatch(setLoadingWritingMessage(true))
             let signature = await signer.signMessage('Registration account')
                 .catch((e) => dispatch(setLoadingConnection(false)))
-                .then((res) => dispatch(setAdress(adress)))
-            dispatch(setLoadingWritingMessage(false))
+            let res = await connect({ signature, adress })
+            if(res.data) {
+                let {jwt} = res.data
+                localStorage.setItem('jwt', jwt)
+                dispatch(setIsConnected(true))
+                dispatch(setAdress(adress))
+                dispatch(setLoadingWritingMessage(false))
+            }
         } catch (e) {
             return e
         }
@@ -84,14 +104,17 @@ export const accountChangedThunk = createAsyncThunk(
 
 export const logoutThunk = createAsyncThunk(
     'web3/logout',
-    async (action, {dispatch}) =>  {
+    async (action, { dispatch }) => {
         try {
-            dispatch(logout())
-            window.ethereum.on('disconnect', () => {
-                window.location.reload()
-            })
+            let adress = await signer.getAddress()
+            let res = await disconnect({adress})
+            if(res.data) {
+                console.log(res.data)
+                dispatch(logout())
+                localStorage.removeItem('jwt')
+            }
         } catch (e) {
-            
+
         }
     }
 )
@@ -116,9 +139,13 @@ const web3Slice = createSlice({
         },
         logout: (state, action) => {
             state.adress = ''
+            state.isConnected = false
+        },
+        setIsConnected: (state, action) => {
+            state.isConnected = action.payload
         }
     },
 })
 
-export const { setAdress, setLoadingConnection, setLoadingWritingMessage,setUnsupportedNetwork,logout } = web3Slice.actions
+export const { setAdress, setLoadingConnection, setLoadingWritingMessage, setUnsupportedNetwork, logout,setIsConnected } = web3Slice.actions
 export default web3Slice.reducer
