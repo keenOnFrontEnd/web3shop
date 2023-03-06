@@ -5,7 +5,7 @@ const User = sequelize.define('user', {
     id: { type: DataTypes.STRING, primaryKey: true, unique: true },
     email: { type: DataTypes.STRING, allowNull: true },
     web3Name: { type: DataTypes.STRING, allowNull: true, unique: true },
-    isConnected: {type: DataTypes.BOOLEAN, defaultValue: false}
+    isConnected: { type: DataTypes.BOOLEAN, defaultValue: false }
 })
 const Basket = sequelize.define("basket", {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true }
@@ -13,7 +13,7 @@ const Basket = sequelize.define("basket", {
 const BasketItem = sequelize.define('basket_item', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     count: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
-    discountValue: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 }
+    discountValue: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0}
 })
 const Item = sequelize.define('item', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -21,8 +21,8 @@ const Item = sequelize.define('item', {
     price: { type: DataTypes.INTEGER, allowNull: false },
     rating: { type: DataTypes.INTEGER, defaultValue: 0 },
     img: { type: DataTypes.STRING, allowNull: true, defaultValue: 'unknowPhoto' },
-    item_info: { type: DataTypes.STRING, allowNull: true, defaultValue: 'No description'},
-    category: {type: DataTypes.STRING, allowNull: false, defaultValue: 'unisex'}
+    item_info: { type: DataTypes.STRING, allowNull: true, defaultValue: 'No description' },
+    category: { type: DataTypes.STRING, allowNull: false, defaultValue: 'unisex' }
 })
 const Type = sequelize.define('type', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
@@ -68,19 +68,20 @@ Item.belongsTo(Brand)
 Item.hasMany(Rating)
 Rating.belongsTo(Item)
 
-Item.hasMany(BasketItem)
-
-BasketItem.belongsTo(Item)
-
 Type.belongsToMany(Brand, { through: TypeBrand })
 Brand.belongsToMany(Type, { through: TypeBrand })
 
 Item.belongsToMany(Sizes, { through: ItemSize })
 Sizes.belongsToMany(Item, { through: ItemSize })
+
 ItemSize.belongsTo(Item)
 ItemSize.belongsTo(Sizes)
+
 Item.hasMany(ItemSize)
 Sizes.hasMany(ItemSize)
+
+ItemSize.hasMany(BasketItem)
+BasketItem.belongsTo(ItemSize)
 
 module.exports = {
     User,

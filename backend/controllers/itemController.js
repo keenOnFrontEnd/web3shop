@@ -118,29 +118,13 @@ class ItemController {
     }
     async getAllItems(req, res) {
         try {
-
-            let { category } = req.params
-            let candidates
-
-            if (!category) {
-                candidates = await Item.findAndCountAll({
-                    include: {
-                        model: ItemSize,
-                        include: [
-                            Sizes
-                        ]
+            let candidates = await Item.findAndCountAll({
+                include: {
+                    model: Sizes,
+                    as: 'sizes',
+                    through: {
+                        attributes: ['count']
                     }
-                })
-            }
-
-            candidates = await Item.findAndCountAll({
-                where: {
-                    category: category
-                }, include: {
-                    model: ItemSize,
-                    include: [
-                        Sizes
-                    ]
                 }
             })
             return res.json(candidates)

@@ -32,7 +32,7 @@ const Headrer = () => {
         editAdress = "CHANGE NETWORK !"
     }
     return (
-        <Container fluid="auto" className={`${s.bg} d-md-flex justify-content-between`}>
+        <Container className={`${s.bg} d-md-flex justify-content-between`}>
             <Col md="4" className='ms-5 d-md-flex align-items-center'>
                 <div className={`container d-flex justify-content-around align-items-center p-3 rounded-pill ${s.searchWrapper}`}>
                     <Search size={20} className="align-self-center" />

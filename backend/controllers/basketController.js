@@ -1,7 +1,7 @@
 const ApiError = require('../error/ApiError')
 const jsonwebtoken = require('jsonwebtoken')
 const { ethers } = require('ethers')
-const { User, Basket, BasketItem, Item } = require('../models/models')
+const { User, Basket, BasketItem, Item, Sizes, ItemSize } = require('../models/models')
 
 // const generateJwt = (adress) => {
 //     return jsonwebtoken.sign({ adress },
@@ -34,9 +34,9 @@ class BasketController {
 
 
     // }
-    async addItemToBasket (req, res) {
+    async addItemToBasket(req, res) {
         try {
-            let {itemId, adress} = req.body
+            let { size,itemId, adress } = req.body
 
             let basketId = await Basket.findOne({
                 where: {
@@ -44,37 +44,76 @@ class BasketController {
                 }
             })
 
-            if(!basketId) {
+            if (!basketId) {
                 return res.json(ApiError.badRequest('Not exist basket for this user'))
             }
-            
-            await BasketItem.create({
-                count: 1,
-                basketId: basketId.id,
-                itemId
+
+            let candidateSize = await Sizes.findOne({
+                where: {
+                    size
+                }
             })
-            return res.json("created")
+
+            let itemSize = await ItemSize.findOne({
+                where: {
+                    itemId,
+                    sizeId: candidateSize.id
+                }
+            })
+
+            if(itemSize.count < 1) {
+                return res.json(ApiError.badRequest("Not enough items to sell"))
+            }
+
+            let candidate = await BasketItem.findOne({
+                where: {
+                    basketId: basketId.id,
+                    itemSizeId: itemSize.id
+                }
+            })
+
+            if (candidate) {
+                await candidate.increment('count')
+                return res.json(candidate)
+            }
+            else {
+                let item = await BasketItem.create({
+                    count: 1,
+                    basketId: basketId.id,
+                    itemSizeId: itemSize.id
+                })
+                return res.json(item)
+            }
+
+
 
         } catch (e) {
-            
+
         }
     }
     async getItemsFromBasket(req, res) {
         try {
-            const { userId } = req.params
-
+            let { userId } = req.params
+           
             let basketId = await Basket.findOne({
-                where: userId
+                where: {
+                    userId
+                }
             })
 
-            if (basketId) {
+            if (!basketId) {
                 return res.json(ApiError.badRequest("Not exist basket for this user"))
             }
 
+            console.log(basketId.id)
             const basket_items = await BasketItem.findAndCountAll({
-                where: { basketId: userId },
+                where: { basketId: basketId.id },
                 include: {
-                    model: Item
+                    model: ItemSize,
+                    include: [
+                        Item,
+                        Sizes
+                    ]
                 }
             })
             return res.json(basket_items)
@@ -84,56 +123,55 @@ class BasketController {
     }
     async increaseCountOfBasketItem(req, res) {
         try {
-            const { basketItemId } = req.body
+            const { id } = req.body
 
             const candidate = await BasketItem.findOne({
-                where: { basketItemId }
+                where: { id: id }
             })
             if (!candidate) {
                 return res.json(ApiError.badRequest("Not exists"))
             }
-            await candidate.increment('count', { by: 1 })
+            await candidate.increment("count")
             return res.json(candidate)
         } catch (e) {
-            return es.json(ApiError.badRequest(e.message))
+            return res.json(ApiError.badRequest(e.message))
         }
     }
     async decrementCountOfBasketItem(req, res) {
         try {
-            const { basketItemId } = req.body
+            const { id } = req.body
 
             const candidate = await BasketItem.findOne({
-                where: { basketItemId }
+                where: { id: id }
             })
             if (!candidate) {
                 return res.json(ApiError.badRequest("Not exists"))
             }
-            await candidate.decrement('count', { by: 1 })
-
-            if(candidate.count === 0) {
+            await candidate.decrement("count")
+            if (candidate.count === 0) {
                 await candidate.destroy()
                 return res.json("deleted")
             }
             return res.json(candidate)
         } catch (e) {
-            return es.json(ApiError.badRequest(e.message))
+            return res.json(ApiError.badRequest(e.message))
         }
     }
     async deleteItemFromBasket(req, res) {
-                try {
-                    const { basketItemId } = req.params
-                    const candidate = await BasketItem.findOne({
-                        where: { id: basketItemId }
-                    })
-                    if (!candidate) {
-                        return res.json(ApiError.badRequest("Not exists"))
-                    }
-                    await candidate.destroy()
-                    return res.json("deleted")
-                } catch (e) {
-                    return res.json(ApiError.badRequest(e.message))
-                }
+        try {
+            const { id } = req.params
+            const candidate = await BasketItem.findOne({
+                where: { id: id }
+            })
+            if (!candidate) {
+                return res.json(ApiError.badRequest("Not exists"))
             }
+            await candidate.destroy()
+            return res.json("deleted")
+        } catch (e) {
+            return res.json(ApiError.badRequest(e.message))
+        }
+    }
 
 }
 

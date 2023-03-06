@@ -6,7 +6,7 @@ const router = new Router()
 router.post('/add', itemController.addItem)
 router.put('/update', itemController.updateItemQuantity)
 router.get('/:id', itemController.getItem)
-router.get('/:category', itemController.getAllItems)
+router.get('/', itemController.getAllItems)
 
 module.exports = router
 
